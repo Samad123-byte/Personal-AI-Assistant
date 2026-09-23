@@ -31,7 +31,26 @@ personal-ai-assistant/
 │       └── index.css
 ├── backend/           Express API that forwards messages to n8n
 │   └── server.js
+├── Pilot.json         Exported n8n workflow (see below)
 └── vercel.json        Tells Vercel to build both as one project
+```
+
+## n8n workflow (`Pilot.json`)
+
+`Pilot.json` is an export of the n8n workflow this assistant calls. It's included so anyone cloning this repo can import the same workflow into their own n8n instance instead of building it from scratch.
+
+**To use it:**
+
+1. In n8n, go to **Workflows → Import from File** and select `Pilot.json`.
+2. Open the imported workflow and update anything specific to your setup — credentials, connected accounts, and the webhook path.
+3. Activate the workflow and copy its **Production URL** — that's your `N8N_WEBHOOK_URL`.
+
+**Before deploying your own copy of this repo**, delete `Pilot.json` (or replace it with your own export). It's only meant as a reference for setting up n8n — it isn't read by the frontend or backend at runtime, so removing it doesn't affect the app, and it keeps your published repo from carrying workflow details (node configs, credential references, etc.) that were specific to the original setup.
+
+```bash
+git rm Pilot.json
+git commit -m "Remove reference n8n workflow export"
+git push
 ```
 
 ## Getting started (local development)
