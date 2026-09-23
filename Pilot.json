@@ -1,0 +1,352 @@
+{
+  "name": "Pilot",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "personal-assistant",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "d31b8105-1cbd-4bef-933c-9b250475ec56",
+      "name": "Webhook",
+      "webhookId": "1cc73838-1e77-48b0-b86b-703aa207a6b3"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.body.message }}",
+        "options": {
+          "systemMessage": "You are a helpful personal AI assistant.\n\nYour job is to help the user with:\n- General questions\n- Programming and technical topics\n- Work and productivity\n- Research and summarization\n- Emails\n- Job searching and career-related tasks\n- Learning and planning\n\nBehavior:\n- Answer clearly and naturally.\n- Keep responses concise by default.\n- Give detailed explanations when the user asks for them.\n- Use Markdown when it improves readability.\n- For simple questions, give simple answers.\n- For programming questions, provide clean code and briefly explain it.\n- Do not claim that you performed an action unless you actually performed it using an available tool.\n- If a required tool is unavailable, clearly say that you cannot perform that action yet.\n- Do not make up information or pretend to have access to the user's accounts.\nIMPORTANT:\nWhen the user asks anything about Gmail, emails, inbox, messages, or recent emails, you MUST use the Gmail tool.\nDo not answer that you lack access to email.\nDo not give manual Gmail instructions.\nYou are an assistant inside a personal productivity application."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        704,
+        0
+      ],
+      "id": "9aa41a62-6fc6-4399-954f-6b7e5f5bea82",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-5-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        464,
+        240
+      ],
+      "id": "89b52c77-993d-4d6b-b94b-70b558772418",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": null,
+          "name": "",
+          "__aiGatewayManaged": true
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { reply: $json.output } }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1296,
+        0
+      ],
+      "id": "08a2b983-312e-4405-8ec6-23743639c721",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "toolDescription": "Search the web for current job listings based on the user's requested job title, skills, location, experience level, and other job criteria.\n\nUse this tool when the user asks to find, search for, or research jobs.\n\nFor job searches, prefer results from LinkedIn Jobs, Indeed, company career pages, and other legitimate job boards.\n\nReturn relevant job listing information such as:\n- Job title\n- Company\n- Location\n- Experience requirements\n- Technologies/skills\n- Posted date when available\n- Salary when available\n- Job URL\n- Source\n\nNever apply to a job or submit an application.",
+        "method": "POST",
+        "url": "https://api.tavily.com/search",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer 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"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"query\": \"latest junior MERN developer jobs Lahore Pakistan\",\n  \"topic\": \"general\",\n  \"search_depth\": \"advanced\",\n  \"max_results\": 10\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.5,
+      "position": [
+        720,
+        240
+      ],
+      "id": "3f38fd54-356f-48d0-8ae1-0cdebd8d6834",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "limit": 10,
+        "filters": {}
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.2,
+      "position": [
+        848,
+        240
+      ],
+      "id": "d9a65a66-aa14-4142-813c-5be96a2a5024",
+      "name": "Get many messages in Gmail",
+      "webhookId": "c38f7047-f27c-4605-aee6-cb5815e5c1e0",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "JMpf17Ysfihu6xX6",
+          "name": "Gmail account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "toolDescription": "Search the web for current information, research, articles, documentation, tutorials, news, products, technologies, and other topics requested by the user.\n\nUse this tool whenever the user asks to research, search the web, find information online, compare current information, or get the latest information about a topic.\n\nDo not use this tool for job searches because a separate job search tool is available.\n\nReturn relevant and recent sources with their titles, URLs, and useful information from the search results.",
+        "method": "POST",
+        "url": "https://api.tavily.com/search",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer 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"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"query\": \"{{ $fromAI('query', 'The exact topic or question the user wants you to research') }}\",\n  \"topic\": \"general\",\n  \"search_depth\": \"advanced\",\n  \"max_results\": 5\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.5,
+      "position": [
+        976,
+        240
+      ],
+      "id": "21fe4b78-316b-48f3-a04a-d8afefa15e01",
+      "name": "HTTP Request1"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.body.sessionId }}",
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.4,
+      "position": [
+        592,
+        240
+      ],
+      "id": "9508eced-15e5-41a5-9ed3-3889f04f7bb4",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Send a message in GmailSend an email using the user's connected Gmail account.\n\nUse this tool whenever the user explicitly asks you to send, compose and send, or reply to an email.\n\nBefore sending, make sure you have the recipient, subject, and message content.\n\nNever send an email unless the user explicitly asks you to send it.",
+        "sendTo": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('To', ``, 'string') }}",
+        "subject": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Subject', ``, 'string') }}",
+        "emailType": "text",
+        "message": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message', ``, 'string') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.2,
+      "position": [
+        1104,
+        240
+      ],
+      "id": "9d9d2e96-605d-4642-909e-d21d33dd3c28",
+      "name": "Send a message in Gmail",
+      "webhookId": "4e433642-97d1-4e10-b6d7-d874cef92e1f",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "JMpf17Ysfihu6xX6",
+          "name": "Gmail account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "dac5a33c-b11e-4415-b708-565fa6100e7b",
+              "name": "sessionId",
+              "value": "={{ $json.body.sessionId }}",
+              "type": "string"
+            },
+            {
+              "id": "cef1f982-e710-4d95-9b72-4402db7c2725",
+              "name": "message",
+              "value": "={{ $json.body.message }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": "={{ true }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        224,
+        0
+      ],
+      "id": "cbdbd47a-a0f9-4e13-b618-6b2afc3a03df",
+      "name": "Edit Fields"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get many messages in Gmail": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message in Gmail": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "40e5e295-b535-4c44-9e83-c17602ccf0dc",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "e4d2fecbec65d6522cbbcf005b4d83122749ea82f126d1f4ce5b3eb9d4e1c205"
+  },
+  "nodeGroups": [],
+  "id": "QQWBMzMLYPJ3WPLc",
+  "tags": []
+}
